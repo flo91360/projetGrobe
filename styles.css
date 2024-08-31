@@ -1,0 +1,22 @@
+.highlight {
+    position: absolute;
+    border: 2px solid red; /* Style de la bordure */
+    pointer-events: none; /* Empêche la bordure d'interférer avec les événements de la souris */
+    display: none; /* Masque le rectangle par défaut */
+}
+.cross {
+    position: absolute;
+    color: red;
+    font-size: 50px;
+    pointer-events: none; /* Empêche la croix d'interférer avec les événements de la souris */
+    display: none; /* Masque la croix par défaut */
+}
+.hidden {
+    display: none;
+}
+
+#crossMessage {
+    margin-left: 10px;
+    color: green; /* Choisissez la couleur qui vous convient */
+}
+

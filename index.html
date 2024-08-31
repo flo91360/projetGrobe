@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte Interactive de Grobe</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Carte de l'île de Grobe</h1>
+
+    <!-- Bouton pour recharger l'image de base -->
+    <button onclick="reloadBaseMap()">Recharger la carte de base</button>
+
+    <!-- Bouton pour activer l'ajout de croix -->
+    <button id="addCrossButton" class="hidden" onclick="showTimeInput()">Ajouter une croix</button>
+
+
+    <!-- Champ pour entrer l'heure de début -->
+    <div id="timeInputContainer" class="hidden">
+        <label for="timeInput">Entrez l'heure (HH:MM): </label>
+        <input type="time" id="timeInput">
+        <button onclick="confirmTime()">Confirmer</button>
+        <span id="crossMessage" class="hidden"></span> <!-- Élément pour afficher le message -->
+    </div>
+
+    <div id="mapContainer" style="position: relative;">
+        <img id="mainMap" src="images/carteGrobe.png" alt="Carte de Grobe" usemap="#grobeMap" onclick="placeCross(event)">
+        <map name="grobeMap">
+            <area shape="rect" coords="110,65,180,105"  data-map-pos="32_54" onclick="openMapImage(this)" onmouseover="showHighlight(110,65,70,40)" onmouseout="hideHighlight()">
+            <area shape="rect" coords="180,65,250,105"  data-map-pos="33_54" onclick="openMapImage(this)" onmouseover="showHighlight(180,65,70,40)" onmouseout="hideHighlight()">
+            <area shape="rect" coords="250,65,320,105"  data-map-pos="34_54" onclick="openMapImage(this)" onmouseover="showHighlight(250,65,70,40)" onmouseout="hideHighlight()">
+
+            <area shape="rect" coords="40,105,110,145"  data-map-pos="31_53" onclick="openMapImage(this)" onmouseover="showHighlight(40,105,70,40)" onmouseout="hideHighlight()">
+            <area shape="rect" coords="110,105,180,145" data-map-pos="32_53" onclick="openMapImage(this)" onmouseover="showHighlight(110,105,70,40)" onmouseout="hideHighlight()">
+            <area shape="rect" coords="180,105,250,145" data-map-pos="33_53" onclick="openMapImage(this)" onmouseover="showHighlight(180,105,70,40)" onmouseout="hideHighlight()">
+            <area shape="rect" coords="250,105,320,145" data-map-pos="34_53" onclick="openMapImage(this)" onmouseover="showHighlight(250,105,70,40)" onmouseout="hideHighlight()">
+            <area shape="rect" coords="320,105,390,145" data-map-pos="35_53" onclick="openMapImage(this)" onmouseover="showHighlight(320,105,70,40)" onmouseout="hideHighlight()">
+
+            <area shape="rect" coords="40,145,110,185"  data-map-pos="31_52" onclick="openMapImage(this)" onmouseover="showHighlight(40,145,70,40)" onmouseout="hideHighlight()">
+            <area shape="rect" coords="110,145,180,185" data-map-pos="32_52" onclick="openMapImage(this)" onmouseover="showHighlight(110,145,70,40)" onmouseout="hideHighlight()">
+            <area shape="rect" coords="180,145,250,185" data-map-pos="33_52" onclick="openMapImage(this)" onmouseover="showHighlight(180,145,70,40)" onmouseout="hideHighlight()">
+            <area shape="rect" coords="250,145,320,185" data-map-pos="34_52" onclick="openMapImage(this)" onmouseover="showHighlight(250,145,70,40)" onmouseout="hideHighlight()">
+            <area shape="rect" coords="320,145,390,185" data-map-pos="35_52" onclick="openMapImage(this)" onmouseover="showHighlight(320,145,70,40)" onmouseout="hideHighlight()">
+
+            <area shape="rect" coords="110,185,180,225" data-map-pos="32_51" onclick="openMapImage(this)" onmouseover="showHighlight(110,185,70,40)" onmouseout="hideHighlight()">
+            <area shape="rect" coords="250,185,250,225" data-map-pos="33_51" onclick="openMapImage(this)" onmouseover="showHighlight(250,185,70,40)" onmouseout="hideHighlight()">
+            <area shape="rect" coords="250,185,320,225" data-map-pos="34_51" onclick="openMapImage(this)" onmouseover="showHighlight(250,185,70,40)" onmouseout="hideHighlight()">
+            <area shape="rect" coords="320,185,390,225" data-map-pos="35_51" onclick="openMapImage(this)" onmouseover="showHighlight(320,185,70,40)" onmouseout="hideHighlight()">
+
+            <area shape="rect" coords="110,225,180,265" data-map-pos="32_50" onclick="openMapImage(this)" onmouseover="showHighlight(110,225,70,40)" onmouseout="hideHighlight()">
+            <area shape="rect" coords="180,225,250,265" data-map-pos="33_50" onclick="openMapImage(this)" onmouseover="showHighlight(180,225,70,40)" onmouseout="hideHighlight()">
+            <area shape="rect" coords="250,225,320,265" data-map-pos="34_50" onclick="openMapImage(this)" onmouseover="showHighlight(250,225,70,40)" onmouseout="hideHighlight()">
+
+            <area shape="rect" coords="180,265,250,305" data-map-pos="33_49" onclick="openMapImage(this)" onmouseover="showHighlight(180,265,70,40)" onmouseout="hideHighlight()">
+            <area shape="rect" coords="250,265,320,305" data-map-pos="34_49" onclick="openMapImage(this)" onmouseover="showHighlight(250,265,70,40)" onmouseout="hideHighlight()">
+
+            <area shape="rect" coords="180,305,250,345" data-map-pos="33_48" onclick="openMapImage(this)" onmouseover="showHighlight(180,305,70,40)" onmouseout="hideHighlight()">
+            <area shape="rect" coords="250,305,320,345" data-map-pos="34_48" onclick="openMapImage(this)" onmouseover="showHighlight(250,305,70,40)" onmouseout="hideHighlight()">
+            <!-- Ajoutez les autres areas ici -->
+        </map>
+        <div id="highlight" class="highlight"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
