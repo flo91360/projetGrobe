@@ -6,10 +6,9 @@
 }
 .cross {
     position: absolute;
-    color: red;
     font-size: 50px;
     pointer-events: none; /* Empêche la croix d'interférer avec les événements de la souris */
-    display: none; /* Masque la croix par défaut */
+    display: block; /* Assurez-vous que la croix est visible */
 }
 .hidden {
     display: none;
@@ -20,3 +19,34 @@
     color: green; /* Choisissez la couleur qui vous convient */
 }
 
+
+#mapContainer {
+    display: flex; /* Utilisation de Flexbox pour aligner horizontalement */
+    align-items: flex-start; /* Aligne les éléments en haut pour éviter les décalages verticaux */
+}
+
+#mapArea {
+    position: relative;
+}
+
+#mainMap {
+    display: block; /* Assure que l'image de la carte principale ne change pas de taille */
+}
+
+#crossList {
+    margin-left: 20px; /* Espacement entre la carte et la liste */
+    width: 200px; /* Largeur fixe pour la liste */
+    max-height: calc(100vh - 20px); /* Hauteur maximale pour ne pas dépasser la vue */
+    overflow-y: auto; /* Ajoute un défilement vertical si nécessaire */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optionnel : ajoute une ombre pour mieux séparer visuellement la liste */
+}
+
+#crossList ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#crossList li {
+    margin-bottom: 10px;
+}
