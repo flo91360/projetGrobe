@@ -1,12 +1,25 @@
 let crossMode = false;
 let crossData = {}; // Pour stocker les données des croix
-const colors = [
+let availableColorsByMap = {}; // Pour stocker les couleurs disponibles par sous-carte
+let availableColors = [
     { french: 'violette', css: 'purple' }, 
     { french: 'bleu', css: 'blue' }, 
     { french: 'rouge', css: 'red' }
-]; // Liste des couleurs avec noms français et valeurs CSS
+]; // Liste des couleurs disponibles
+let colors = [
+    { french: 'violette', css: 'purple' }, 
+    { french: 'bleu', css: 'blue' }, 
+    { french: 'rouge', css: 'red' }
+]; // Liste des couleurs disponibles NE BOUGE PAS
 let colorIndex = 0; // Index pour suivre la couleur actuelle
+let nextCrossId = 1; // Compteur pour générer des ID uniques
 
+// Fonction pour générer un identifiant unique sous forme de nombre séquentiel
+function generateUniqueId() {
+    if(nextCrossId > 99)
+        nextCrossId = 0 
+    return nextCrossId++;
+}
 // Affiche le champ pour entrer l'heure
 function showTimeInput() {
     document.getElementById('timeInputContainer').style.display = 'block';
@@ -28,20 +41,47 @@ function confirmTime() {
     }
 }
 
+function initializeColorsForMap(mapKey) {
+    if (!availableColorsByMap[mapKey]) {
+        console.log("INIT COLOR MAP")
+        availableColorsByMap[mapKey] = [
+            { french: 'violette', css: 'purple' },
+            { french: 'bleu', css: 'blue' },
+            { french: 'rouge', css: 'red' }
+        ];
+    }
+}
+
 // Place une croix et la stocke
 function placeCross(event) {
     if (crossMode) {
+        let mapKey = getCurrentMapKey();
+        console.log("coucou")
+        console.log(availableColorsByMap[mapKey])
+        if (availableColorsByMap[mapKey].length === 0) {
+            alert("Toutes les couleurs ont été utilisées.");
+            return;
+        }
+
+        const crossId = generateUniqueId()
+        const listItemId = `list-${crossId}`; // ID distinct pour l'élément de liste
+
+
         var mapContainer = document.getElementById('mapContainer');
         var rect = mapContainer.getBoundingClientRect();
         var x = event.clientX - rect.left;
         var y = event.clientY - rect.top;
 
-        // Déterminer la couleur de la croix
-        let color = colors[colorIndex];
-        colorIndex = (colorIndex + 1) % colors.length; // Passer à la couleur suivante
+        // Prendre la première couleur disponible pour cette carte
+        let color
+        let colorsAvailable = availableColorsByMap[mapKey];
+        if (colorsAvailable && colorsAvailable.length > 0) {
+            color = colorsAvailable.shift(); // Utiliser shift() sur le tableau de couleurs
+        }
 
         // Créer un nouvel élément pour la croix
         var newCross = document.createElement('div');
+        newCross.id = crossId; // Ajouter un ID unique à la croix
         newCross.classList.add('cross');
         newCross.textContent = 'X';
         newCross.style.left = (x - 25) + 'px'; // Centrer la croix
@@ -52,16 +92,30 @@ function placeCross(event) {
         // Ajouter la croix au conteneur
         mapContainer.appendChild(newCross);
 
+        // Calculer l'heure limite (heure renseignée + 25 minutes)
+        let timeInput = document.getElementById('timeInput').value;
+        let [hours, minutes] = timeInput.split(':').map(Number);
+        let limitTime = new Date();
+        limitTime.setHours(hours, minutes + 25, 0, 0);
+
         // Stocker les données de la croix
-        let mapKey = getCurrentMapKey();
         if (!crossData[mapKey]) {
             crossData[mapKey] = [];
         }
 
+
+        console.log("crossId creation")
+        console.log(crossId)
         crossData[mapKey].push({
-            time: document.getElementById('timeInput').value,
-            color: color.french
+            id: crossId,
+            listItemId: listItemId,
+            time: timeInput,
+            color: color,
+            x: x, // Enregistrer la position X
+            y: y, // Enregistrer la position Y
+            limitTime: limitTime // Sauvegarder l'heure limite
         });
+        console.log(crossData)
 
         // Désactiver le mode croix
         crossMode = false;
@@ -72,50 +126,185 @@ function placeCross(event) {
         document.getElementById('crossMessage').style.display = 'none';
 
 
-        // Mettre à jour la liste des croix
-        updateCrossList();
+        // Ajouter la croix à la liste
+        addCrossToList(color.french, timeInput, crossId, listItemId);
     }
 }
+
 
 // Restaurer les croix pour la carte donnée
 function restoreCrosses(mapKey) {
-    let mapContainer = document.getElementById('mapSection');
+    let mapContainer = document.getElementById('mapContainer');
     // Réinitialiser les croix existantes
     hideCross();
+    console.log(crossData)
+
+    // Réinitialiser la liste des croix
+    let listContainer = document.getElementById('crossListItems');
+    listContainer.innerHTML = ''; // Vider la liste actuelle
 
     if (crossData[mapKey]) {
         crossData[mapKey].forEach(function(crossInfo) {
+            console.log("crossInfo")
+            console.log(crossInfo)
             let newCross = document.createElement('div');
             newCross.classList.add('cross');
             newCross.textContent = 'X';
-            newCross.style.color = crossInfo.color; // Restaurer la couleur de la croix
+            newCross.style.color = crossInfo.color.css; // Restaurer la couleur de la croix
+            newCross.style.left = (crossInfo.x - 25) + 'px'; // Restaurer la position X
+            newCross.style.top = (crossInfo.y - 25) + 'px'; // Restaurer la position Y
             newCross.style.display = 'block';
             // Ajouter la croix au conteneur sans coordonnées
             mapContainer.appendChild(newCross);
+
+            // Retirer la couleur des couleurs disponibles
+            availableColorsByMap[mapKey] = availableColorsByMap[mapKey].filter(color => color.css !== crossInfo.color.css);
+
+             // Ajouter la croix à la liste
+             addCrossToList(crossInfo.color.french, crossInfo.time, crossInfo.id, crossInfo.listItemId);
         });
     }
 }
 
 
-// Mettre à jour la liste des croix
-function updateCrossList() {
-    let crossList = document.getElementById('crossList');
-    let crossListItems = document.getElementById('crossListItems');
-    let mapKey = getCurrentMapKey();
+function updateCountdown(timerElement, limitTime, listItem, crossId, listItemId) {
+    function updateTimer() {
+        let now = new Date();
+        let timeLeft = limitTime - now;
 
-    // Réinitialiser la liste des croix
-    crossListItems.innerHTML = '';
+        if (timeLeft <= 0) {
+            // Le premier timer a expiré
+            clearInterval(timerInterval);
+            timerElement.textContent = 'Repop';
+            timerElement.classList.add('expired'); // Classe pour définir la couleur verte et le texte en gras
+            startSecondTimer(timerElement, listItem, crossId, listItemId); // Démarrer le second timer à côté
 
+        } else {
+            let minutes = Math.floor(timeLeft / 60000);
+            let seconds = Math.floor((timeLeft % 60000) / 1000);
+            timerElement.textContent = `${formatTime(minutes)}:${formatTime(seconds)}`;
+
+            if (timeLeft <= 60000) { // Moins d'une minute
+                timerElement.style.fontWeight = 'bold';
+                timerElement.style.color = 'green';
+            }
+        }
+    }
+
+    let timerInterval = setInterval(updateTimer, 1000);
+    updateTimer();
+}
+
+function startSecondTimer(timerElement, listItem, crossId, listItemId) {
+    let secondTimerElement = document.createElement('span');
+    secondTimerElement.id = `second-timer-${crossId}`;
+    secondTimerElement.classList.add('second-countdown');
+    
+    // Ajouter le second timer à côté du premier
+    timerElement.insertAdjacentElement('afterend', secondTimerElement);
+
+    let startTime = new Date();
+
+    function updateSecondTimer() {
+        let now = new Date();
+        let timeElapsed = now - startTime;
+
+        let minutes = Math.floor(timeElapsed / 60000);
+        let seconds = Math.floor((timeElapsed % 60000) / 1000);
+
+        secondTimerElement.textContent = ` + ${formatTime(minutes)}:${formatTime(seconds)}`;
+
+        if (minutes >= 1) {
+            clearInterval(secondTimerInterval);
+            console.log("crossId")
+            console.log(crossId)
+            removeCrossFromMapAndList(crossId, listItemId); // Supprimer la croix et la liste après 50 minutes
+        }
+    }
+
+    let secondTimerInterval = setInterval(updateSecondTimer, 1000);
+    updateSecondTimer();
+}
+
+function removeCrossFromMapAndList(crossId, listItemId) {
+    // Supprimer la croix de la carte
+    let cross = document.getElementById(crossId);
+    if (cross) { 
+        cross.remove();
+    }
+
+    // Supprimer l'élément de la liste
+    let listItem = document.getElementById(listItemId);
+    if (listItem) {
+        listItem.remove();
+    }
+
+    // Retrouver la croix dans les données stockées
     if (crossData[mapKey]) {
-        crossData[mapKey].forEach(function(crossInfo) {
-            let listItem = document.createElement('li');
-            listItem.textContent = `Croix ${crossInfo.color} à ${crossInfo.time}`;
-            crossListItems.appendChild(listItem);
-        });
-    } else {
+        let crossIndex = crossData[mapKey].findIndex(cross => cross.id === crossId);
+        if (crossIndex !== -1) {
+            let colorUsed = crossData[mapKey][crossIndex].color;
+
+            // Remettre la couleur dans la liste des couleurs disponibles
+            availableColorsByMap[mapKey].push(colorUsed);
+
+            // Supprimer la croix des données
+            crossData[mapKey].splice(crossIndex, 1);
+        }
+    }
+
+    // Supprimer les données de la croix de crossData
+    let mapKey = getCurrentMapKey();
+    if (crossData[mapKey]) {
+        crossData[mapKey] = crossData[mapKey].filter(crossInfo => crossInfo.id !== crossId);
+    }
+}
+
+function formatTime(unit) {
+    return unit < 10 ? '0' + unit : unit;
+}
+
+function addCrossToList(crossColor, timeEntered, crossId, listItemId) {
+    let listContainer = document.getElementById('crossListItems');
+
+    // Vérifier si la croix a déjà été ajoutée pour éviter les doublons
+    if (!document.getElementById(listItemId)) {
         let listItem = document.createElement('li');
-        listItem.textContent = 'Aucune croix enregistrée.';
-        crossListItems.appendChild(listItem);
+        listItem.id = listItemId; // Utiliser listItemId pour la liste
+
+        // Créer l'élément pour le timer
+        let timerElement = document.createElement('span');
+        timerElement.id = `timer-${crossId}`;
+        timerElement.classList.add('countdown');
+
+        // Créer l'élément pour le second timer
+        let secondTimerElement = document.createElement('span');
+        secondTimerElement.id = `second-timer-${crossId}`;
+        secondTimerElement.classList.add('second-countdown');
+
+        // Créer le bouton de suppression
+        let deleteIcon = document.createElement('span');
+        deleteIcon.innerHTML = '&#x1F5D1;'; // Code HTML pour une icône de poubelle
+        deleteIcon.classList.add('delete-icon');
+        deleteIcon.onclick = function() {
+            removeCrossFromMapAndList(crossId, listItemId); // Appeler la fonction de suppression
+        };
+
+        listItem.innerHTML = `Croix ${crossColor} à ${timeEntered} - `;
+        listItem.appendChild(timerElement);
+        listItem.appendChild(secondTimerElement);
+        listItem.appendChild(deleteIcon);
+
+        listContainer.appendChild(listItem);
+
+        // Calculer l'heure limite pour le premier timer
+        let limitTime = new Date();
+        let timeInput = document.getElementById('timeInput').value;
+        let [hours, minutes] = timeInput.split(':').map(Number);
+        limitTime.setHours(hours, minutes + 25, 0, 0);
+        
+        // Démarrer le premier timer
+        updateCountdown(timerElement, limitTime, listItem, crossId, listItemId);
     }
 }
 // Fonction pour obtenir la clé actuelle de la carte
@@ -203,6 +392,8 @@ function openMapImage(areaElement) {
 
     // Restaurer les croix enregistrées
     restoreCrosses(getCurrentMapKey());
+
+    initializeColorsForMap(getCurrentMapKey()); // S'assurer que les couleurs sont initialisées
 
     // Afficher le bouton d'ajout de croix
     document.getElementById('addCrossButton').style.display = 'inline';

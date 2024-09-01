@@ -35,7 +35,7 @@
 
 #crossList {
     margin-left: 20px; /* Espacement entre la carte et la liste */
-    width: 200px; /* Largeur fixe pour la liste */
+    width: 400px; /* Largeur fixe pour la liste */
     max-height: calc(100vh - 20px); /* Hauteur maximale pour ne pas dépasser la vue */
     overflow-y: auto; /* Ajoute un défilement vertical si nécessaire */
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optionnel : ajoute une ombre pour mieux séparer visuellement la liste */
@@ -49,4 +49,38 @@
 
 #crossList li {
     margin-bottom: 10px;
+}
+
+.countdown {
+    font-weight: bold;
+    color: #333;
+}
+
+.countdown.urgent {
+    color: green;
+    font-weight: bold;
+}
+
+.countdown.timeout {
+    color: red;
+}
+
+
+.second-countdown {
+    font-size: 16px;       /* Taille de police plus grande */
+    color: red;            /* Couleur du second timer */
+    margin-left: 20px;     /* Décalage sur la droite */
+    font-weight: bold;     /* Texte en gras */
+}
+
+.delete-icon {
+    cursor: pointer;
+    color: red; /* Couleur de l'icône */
+    font-size: 15px;
+    margin-left: 5px;
+    vertical-align: top;
+}
+
+.delete-icon:hover {
+    color: darkred; /* Couleur au survol */
 }
