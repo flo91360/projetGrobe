@@ -160,6 +160,8 @@ function restoreCrosses(mapKey) {
             // Retirer la couleur des couleurs disponibles
             availableColorsByMap[mapKey] = availableColorsByMap[mapKey].filter(color => color.css !== crossInfo.color.css);
 
+            document.getElementById('timeInput').value = crossInfo.time ;
+
              // Ajouter la croix à la liste
              addCrossToList(crossInfo.color.french, crossInfo.time, crossInfo.id, crossInfo.listItemId);
         });
@@ -303,6 +305,11 @@ function addCrossToList(crossColor, timeEntered, crossId, listItemId) {
         let [hours, minutes] = timeInput.split(':').map(Number);
         limitTime.setHours(hours, minutes + 25, 0, 0);
         
+
+        console.log("INFOS TIMER")
+        console.log(limitTime)
+        console.log(timeInput)
+ 
         // Démarrer le premier timer
         updateCountdown(timerElement, limitTime, listItem, crossId, listItemId);
     }
