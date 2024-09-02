@@ -168,8 +168,9 @@ function restoreCrosses(mapKey) {
     }
 }
 
-
-function updateCountdown(timerElement, limitTime, listItem, crossId, listItemId) {
+         
+function updateCountdown(timerElement, limitTime, listItem, crossId, listItemId, mapName, crossColor){
+    let timerAlmostDone = false;
     function updateTimer() {
         let now = new Date();
         let timeLeft = limitTime - now;
@@ -189,6 +190,12 @@ function updateCountdown(timerElement, limitTime, listItem, crossId, listItemId)
             if (timeLeft <= 60000) { // Moins d'une minute
                 timerElement.style.fontWeight = 'bold';
                 timerElement.style.color = 'green';
+                if(timerAlmostDone == false){
+                    timerAlmostDone = true
+                    // Envoyer un message via le webhook Discord
+                    // Envoyer un message via le webhook Discord
+                    sendDiscordWebhook(crossId, mapName, crossColor);
+                }
             }
         }
     }
@@ -241,6 +248,7 @@ function removeCrossFromMapAndList(crossId, listItemId) {
         listItem.remove();
     }
 
+    mapKey = getCurrentMapKey()
     // Retrouver la croix dans les données stockées
     if (crossData[mapKey]) {
         let crossIndex = crossData[mapKey].findIndex(cross => cross.id === crossId);
@@ -311,7 +319,7 @@ function addCrossToList(crossColor, timeEntered, crossId, listItemId) {
         console.log(timeInput)
  
         // Démarrer le premier timer
-        updateCountdown(timerElement, limitTime, listItem, crossId, listItemId);
+        updateCountdown(timerElement, limitTime, listItem, crossId, listItemId,getCurrentMapKey(),crossColor);
     }
 }
 // Fonction pour obtenir la clé actuelle de la carte
@@ -407,4 +415,28 @@ function openMapImage(areaElement) {
 
     // Afficher la liste des croix
     document.getElementById('crossList').classList.remove('hidden');
+}
+
+function sendDiscordWebhook(crossId, subMapName, crossColor) {
+    const webhookUrl = "https://discord.com/api/webhooks/1280233218313949224/kR3AFVsnPzchIDP7ISRP31mfHRYeQKKRhz3s45CRQPm1lgi_mSN1p25MwAxXKk9OTgbf";  // Remplacez par l'URL du webhook
+
+    const messageContent = `@here Attention ! Le timer pour la croix **${crossId}** (${subMapName}) de couleur **${crossColor}** va expirer dans moins d'une minute.`;
+
+    fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            content: messageContent
+        })
+    }).then(response => {
+        if (response.ok) {
+            console.log("Message envoyé via le webhook");
+        } else {
+            console.error("Erreur lors de l'envoi du message via le webhook");
+        }
+    }).catch(error => {
+        console.error("Erreur réseau :", error);
+    });
 }
